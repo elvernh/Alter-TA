@@ -1,0 +1,15 @@
+[
+  {"name": "baseline",     "inter_ms": 2000, "fall": 3, "rise": 2, "failure": "total"},
+  {"name": "inter_500",    "inter_ms": 500,  "fall": 3, "rise": 2, "failure": "total"},
+  {"name": "inter_5000",   "inter_ms": 5000, "fall": 3, "rise": 2, "failure": "total"},
+  {"name": "fall_1",       "inter_ms": 2000, "fall": 1, "rise": 2, "failure": "total"},
+  {"name": "fall_5",       "inter_ms": 2000, "fall": 5, "rise": 2, "failure": "total"},
+  {"name": "rise_1",       "inter_ms": 2000, "fall": 3, "rise": 1, "failure": "total"},
+  {"name": "rise_5",       "inter_ms": 2000, "fall": 3, "rise": 5, "failure": "total"},
+  {"name": "agresif",      "inter_ms": 500,  "fall": 1, "rise": 1, "failure": "total"},
+  {"name": "konservatif",  "inter_ms": 5000, "fall": 5, "rise": 5, "failure": "total"},
+  {"name": "flap_fall1",   "inter_ms": 2000, "fall": 1, "rise": 2, "failure": "intermittent", "failure_probability": 0.3},
+  {"name": "flap_fall5",   "inter_ms": 2000, "fall": 5, "rise": 2, "failure": "intermittent", "failure_probability": 0.3},
+  {"name": "hang_baseline", "inter_ms": 2000, "fall": 3, "rise": 2, "failure": "hang"}
+]
+

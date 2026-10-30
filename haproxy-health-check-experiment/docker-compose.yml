@@ -1,0 +1,69 @@
+name: haproxy-health-check-experiment
+
+# The load generator and the system under test get separate cores of the
+# 8-CPU Docker Desktop VM so k6 does not compete with HAProxy and the services.
+x-service: &service
+  build: ./service
+  restart: "no"
+  cpuset: ${SUT_CPUSET:-4-7}
+  networks:
+    experiment:
+
+services:
+  service1:
+    <<: *service
+    environment:
+      INSTANCE_NAME: service1
+    networks:
+      experiment:
+        ipv4_address: 172.28.0.31
+
+  service2:
+    <<: *service
+    environment:
+      INSTANCE_NAME: service2
+    networks:
+      experiment:
+        ipv4_address: 172.28.0.32
+
+  service3:
+    <<: *service
+    environment:
+      INSTANCE_NAME: service3
+      HEALTH_FAILURE_PROBABILITY: ${HEALTH_FAILURE_PROBABILITY:-0}
+      HEALTH_SEED: ${HEALTH_SEED:-1}
+    networks:
+      experiment:
+        ipv4_address: 172.28.0.33
+
+  haproxy:
+    image: haproxy:3.2-alpine
+    restart: "no"
+    cpuset: ${SUT_CPUSET:-4-7}
+    depends_on:
+      - service1
+      - service2
+      - service3
+    volumes:
+      - ./.runtime/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
+    networks:
+      experiment:
+        ipv4_address: 172.28.0.20
+
+  k6:
+    image: grafana/k6:1.3.0
+    profiles: ["load"]
+    cpuset: ${K6_CPUSET:-0-3}
+    volumes:
+      - ./k6:/scripts:ro
+      - ${ARTIFACT_ROOT:-./artifacts}:/results
+    networks:
+      experiment:
+
+networks:
+  experiment:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.28.0.0/24
+
