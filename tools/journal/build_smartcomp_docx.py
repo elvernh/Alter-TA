@@ -51,6 +51,7 @@ MATH_FONT = '<w:rFonts w:ascii="Cambria Math" w:hAnsi="Cambria Math"/>'
 EXTRA_TERMS = (
     "bootstrap", "hang", "seed", "cpuset", "load window", "renewal", "state of the art",
     "closed-loop", "open-loop", "core", "freeze", "pause", "unpause", "start", "events",
+    "failure detector", "detection time", "e-commerce", "checkout", "downtime",
 )
 TERM_PATTERN = re.compile(
     r"(?<![\w/`])(?<!\w\.)(?:"

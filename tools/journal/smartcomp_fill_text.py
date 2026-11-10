@@ -58,6 +58,8 @@ def fill(text: str, data: dict, id_num: Fmt, plain: Fmt) -> str:
         "AGR_TP": plain(mean[("agresif", "throughput_rps")], 1), "AGR_ERR": plain(mean[("agresif", "error_rate_pct")], 3),
         "LOAD_RANGE": f"{ms(min(mean[(s, 'throughput_rps')] for s in runs))}-{ms(max(mean[(s, 'throughput_rps')] for s in runs))}",
         "RATIO": plain(fo["baseline"]["mean"] / fo["agresif"]["mean"], 1),
+        "KON_FO_S": plain(fo["konservatif"]["mean"] / 1000, 1),
+        "KON_TP_LOSS": plain(100 * (1 - mean[("konservatif", "throughput_rps")] / mean[("agresif", "throughput_rps")]), 1),
     }
 
     values["PILOT_ROWS"] = "\n".join(
@@ -172,25 +174,25 @@ def fill(text: str, data: dict, id_num: Fmt, plain: Fmt) -> str:
         "dari nilai inter, fall, rise, dan perkiraan probabilitas kegagalan pemeriksaan. Sebagai ilustrasi, model yang sama memprediksi sekitar "
         f"{plain(base_tr, 1)} transisi per 60 detik dan {plain(base_cap, 1)}% kapasitas di luar rotasi untuk nilai bawaan fall = 3 pada p = 0,3; "
         "nilai ini merupakan prediksi model dan tidak diukur pada penelitian ini. Hasil ini sejalan dengan literatur pendeteksi kegagalan yang "
-        "menyatakan bahwa penurunan waktu deteksi cenderung menaikkan laju kesalahan penilaian status [13], dan kompromi tersebut dapat "
-        "dilonggarkan apabila ambang deteksi ditetapkan secara adaptif terhadap kondisi beban [16].")
+        "menyatakan bahwa penurunan waktu deteksi cenderung menaikkan laju kesalahan penilaian status [15], dan kompromi tersebut dapat "
+        "dilonggarkan apabila ambang deteksi ditetapkan secara adaptif terhadap kondisi beban [18].")
 
     values["REC_ROWS"] = "\n".join([
-        f"| Latency-sensitive | inter ≤ 500 ms, fall = 1 | Failover {ms(fo['agresif']['mean'])} ms, error rate {plain(mean[('agresif', 'error_rate_pct')], 3)}%, "
+        f"| Latency-sensitive | Pembayaran digital, transfer dana, dan checkout e-commerce dengan replika cadangan | inter ≤ 500 ms, fall = 1 | Failover {ms(fo['agresif']['mean'])} ms, error rate {plain(mean[('agresif', 'error_rate_pct')], 3)}%, "
         f"throughput tertinggi; pada kegagalan intermiten p = 0,3 menghasilkan {plain(m1['tr'], 1)} transisi per 60 s dan {plain(m1['cap_lost'], 1)}% "
         "kapasitas di luar rotasi, sehingga hanya sesuai bila tersedia kapasitas cadangan |",
-        f"| Balanced | inter = 2000 ms, fall = 3, rise = 2 (bawaan HAProxy) | Failover {plain(fo['baseline']['mean'] / 1000, 2)} s dan error rate "
+        f"| Balanced | Katalog produk, pencarian, dan informasi rekening | inter = 2000 ms, fall = 3, rise = 2 (bawaan HAProxy) | Failover {plain(fo['baseline']['mean'] / 1000, 2)} s dan error rate "
         f"{plain(mean[('baseline', 'error_rate_pct')], 3)}%; model memprediksi sekitar {plain(base_tr, 1)} transisi per 60 s pada p = 0,3 |",
-        f"| Stability-sensitive | inter sedang hingga besar, fall ≥ 5 | Tidak ada transisi pada flap_fall5, dengan konsekuensi failover "
+        f"| Stability-sensitive | Layanan yang bergantung pada sistem pihak ketiga, misalnya integrasi bank mitra atau penyedia logistik | inter sedang hingga besar, fall ≥ 5 | Tidak ada transisi pada flap_fall5, dengan konsekuensi failover "
         f"{plain(fo['konservatif']['mean'] / 1000, 1)} s, error rate {plain(mean[('konservatif', 'error_rate_pct')], 3)}%, dan throughput "
         f"{plain(100 * (1 - mean[('konservatif', 'throughput_rps')] / mean[('agresif', 'throughput_rps')]), 1)}% lebih rendah daripada profil agresif |",
-        "| Kegagalan hang | Selaraskan batas waktu klien dan timeout server dengan inter × fall | Deteksi hang setara crash, tetapi permintaan "
+        "| Kegagalan hang | Layanan yang dapat membeku akibat penguncian basis data, misalnya rekonsiliasi transaksi | Selaraskan batas waktu klien dan timeout server dengan inter × fall | Deteksi hang setara crash, tetapi permintaan "
         "yang telah terkirim tertahan hingga batas waktu klien |",
     ])
 
     pk = pairs[("agresif", "konservatif", "failover_ms")][3]
     values["CONCLUSION_ITEMS"] = "\n".join([
-        f"1. Profil parameter health check HAProxy berpengaruh signifikan terhadap failover time, error rate, dan throughput, dengan failover time "
+        f"1. Pada sisi kecepatan, profil parameter health check HAProxy berpengaruh signifikan terhadap failover time, error rate, dan throughput, dengan failover time "
         f"{ms(fo['agresif']['mean'])}, {ms(fo['baseline']['mean'])}, dan {ms(fo['konservatif']['mean'])} ms pada profil agresif, baseline, dan "
         f"konservatif, serta p-value = {p(pk)} pada seluruh pasangan. Throughput profil agresif {values['TP_GAIN']}% lebih tinggi daripada profil "
         f"konservatif dan error rate meningkat dari {values['AGR_ERR']}% menjadi {values['KON_ERR']}%, sedangkan latensi tidak berbeda signifikan.",
@@ -200,12 +202,13 @@ def fill(text: str, data: dict, id_num: Fmt, plain: Fmt) -> str:
         f"3. Kegagalan hang dideteksi secepat kegagalan crash (selisih {signed(hf[0], 1)} ms, p-value = {p(hf[3])}), tetapi permintaan yang telah "
         "terkirim ke instance yang dibekukan tertahan hingga batas waktu klien, sehingga batas waktu klien dan timeout server perlu diselaraskan "
         "dengan konfigurasi health check.",
-        f"4. Nilai fall = 1 menghasilkan {plain(m1['tr'], 1)} transisi per pengujian dan mengeluarkan {plain(m1['cap_lost'], 1)}% kapasitas pool dari "
+        f"4. Pada sisi akurasi, nilai fall = 1 menghasilkan {plain(m1['tr'], 1)} transisi per pengujian dan mengeluarkan {plain(m1['cap_lost'], 1)}% kapasitas pool dari "
         "rotasi secara keliru pada kegagalan intermiten, sedangkan fall = 5 tidak menghasilkan transisi. Model probabilistik yang diusulkan "
         "memprediksi kedua hasil tersebut di dalam interval kepercayaan bootstrap 95%.",
-        "5. Dibandingkan lima penelitian terdahulu, penelitian ini merupakan satu-satunya yang memvariasikan parameter health check secara "
-        "sistematis, mengukur failover time dengan resolusi milidetik, dan menguji perbedaan dengan statistik inferensial, dengan hasil yang "
-        "konsisten dengan penelitian pada probe Kubernetes [12].",
+        "5. Kedua sisi tersebut saling berlawanan: profil yang mendeteksi kegagalan paling cepat juga paling rentan terhadap penandaan keliru, "
+        "sehingga health check load balancer perlu dievaluasi sebagai failure detector pada kecepatan dan akurasi sekaligus. Dibandingkan lima "
+        "penelitian terdahulu, penelitian ini merupakan satu-satunya yang melakukan evaluasi tersebut pada health check load balancer, dengan "
+        "hasil yang konsisten dengan penelitian pada probe Kubernetes [14].",
     ])
 
     for key, value in values.items():
