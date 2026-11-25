@@ -1,4 +1,4 @@
-.PHONY: test validate smoke pilot all core fast-pilot fast clean
+.PHONY: test validate smoke pilot all core fast-pilot fast flap-sweep isolation clean
 
 test:
 	python3 -m unittest discover -s tests -v
@@ -23,6 +23,12 @@ fast-pilot:
 
 fast:
 	python3 orchestrate.py fast
+
+flap-sweep:
+	python3 orchestrate.py flap-sweep
+
+isolation:
+	python3 orchestrate.py isolation
 
 clean:
 	docker compose down -v --remove-orphans

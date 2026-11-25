@@ -51,6 +51,18 @@ make all
   phase, recovery at 50 s, six repetitions run in a seeded random order.
   3 + 36 runs, about 83 s each, about 54 min in total. Summarise with
   `python3 analyze_results.py && python3 analyze_core.py --duration 60`.
+- `make isolation` (reviewer revision) changes one parameter at a time from
+  baseline on a crash: `inter_500`, `inter_5000` (fall 3) and `fall_1`, `fall_5`
+  (inter 2000 ms). 24 runs with the same 60 s protocol.
+- `make flap-sweep` (reviewer revision) runs the intermittent-failure grid:
+  fall 1/3/5 at p = 0.1 and 0.5, plus fall 3 at p = 0.3. 42 runs, same protocol.
+  Together with the fast design this gives 102 runs. Summarise with
+  `python3 analyze_results.py && python3 analyze_revision.py`, which writes
+  `artifacts/revision_summary_60s.json`.
+- Intermittent failures: on every `/health` check, service3 draws a fresh number
+  from xorshift32 (seed 20260909 + repetition, mixed with murmur3 fmix32) and
+  answers HTTP 503 when it is below `HEALTH_FAILURE_PROBABILITY`, so each check
+  fails independently with probability p.
 - `docker-compose.yml` pins k6 to cores 0-3 and HAProxy plus the services to
   cores 4-7 of the 8-CPU VM. Override with `K6_CPUSET` and `SUT_CPUSET` on
   machines with a different CPU count.

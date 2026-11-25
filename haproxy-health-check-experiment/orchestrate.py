@@ -35,6 +35,13 @@ CORE_SCENARIOS = ["agresif", "baseline", "konservatif", "flap_fall1", "flap_fall
 FAST_SCENARIOS = CORE_SCENARIOS + ["hang_baseline"]
 FAST = {"duration": 60, "kill_at": 15, "recover_at": 50, "kill_jitter": True}
 FAST_REPETITIONS = 6
+# Reviewer revision (R1-5): the flapping model at more failure probabilities and
+# a measured fall=3. Same 60 s protocol and repetitions as "fast" (42 runs).
+FLAP_SWEEP_SCENARIOS = ["flap_fall3", "flap_fall1_p01", "flap_fall3_p01", "flap_fall5_p01",
+                        "flap_fall1_p05", "flap_fall3_p05", "flap_fall5_p05"]
+# Reviewer revision (R1-2): one parameter changed at a time around the HAProxy
+# default (inter 2000 ms, fall 3, which is the "fast" baseline run), 24 runs.
+ISOLATION_SCENARIOS = ["inter_500", "inter_5000", "fall_1", "fall_5"]
 # Failure types with an injected start instant: "total" kills the container,
 # "hang" freezes it with docker pause so connections open but never answer.
 TIMED_FAILURES = {"total", "hang"}
@@ -370,7 +377,7 @@ def validate_args(args: argparse.Namespace) -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("mode", choices=["smoke", "pilot", "all", "core", "fast-pilot", "fast", "scenario"])
+    parser.add_argument("mode", choices=["smoke", "pilot", "all", "core", "fast-pilot", "fast", "flap-sweep", "isolation", "scenario"])
     parser.add_argument("--name", help="Scenario name when mode=scenario")
     parser.add_argument("--repetitions", type=int)
     parser.add_argument("--vus", type=int, default=200)
@@ -386,7 +393,7 @@ def main() -> None:
 
     if args.mode == "smoke":
         args.vus, args.duration, args.warmup, args.kill_at, args.recover_at = 20, 16, 2, 3, 11
-    elif args.mode in {"fast", "fast-pilot"}:
+    elif args.mode in {"fast", "fast-pilot", "flap-sweep", "isolation"}:
         args.duration, args.kill_at, args.recover_at, args.kill_jitter = (
             FAST["duration"], FAST["kill_at"], FAST["recover_at"], FAST["kill_jitter"])
     validate_args(args)
@@ -410,6 +417,12 @@ def main() -> None:
     elif args.mode == "fast":
         selected = [by_name[name] for name in FAST_SCENARIOS]
         repetitions = args.repetitions or FAST_REPETITIONS
+    elif args.mode == "isolation":
+        selected = [by_name[name] for name in ISOLATION_SCENARIOS]
+        repetitions = args.repetitions or FAST_REPETITIONS
+    elif args.mode == "flap-sweep":
+        selected = [by_name[name] for name in FLAP_SWEEP_SCENARIOS]
+        repetitions = args.repetitions or FAST_REPETITIONS
     else:
         if not args.name or args.name not in by_name:
             raise SystemExit("--name must be one of: " + ", ".join(by_name))
@@ -421,7 +434,7 @@ def main() -> None:
     if latest_kill >= args.recover_at:
         raise SystemExit("--kill-at plus the jitter range must stay below --recover-at")
 
-    plan = run_plan(selected, repetitions, shuffle=args.mode == "fast", seed=args.seed)
+    plan = run_plan(selected, repetitions, shuffle=args.mode in {"fast", "flap-sweep", "isolation"}, seed=args.seed)
     for index, (scenario, repetition) in enumerate(plan, 1):
         print(f"=== Run {index}/{len(plan)}: {scenario['name']} rep {repetition}", flush=True)
         run_one(scenario, repetition, args)

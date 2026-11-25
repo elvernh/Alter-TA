@@ -11,11 +11,11 @@ import orchestrate
 class ExperimentTests(unittest.TestCase):
     def test_scenario_matrix_matches_manuscript(self):
         scenarios = orchestrate.load_scenarios()
-        self.assertEqual(12, len(scenarios))
+        self.assertEqual(19, len(scenarios))
         self.assertEqual(9, sum(item["failure"] == "total" for item in scenarios))
-        self.assertEqual(2, sum(item["failure"] == "intermittent" for item in scenarios))
+        self.assertEqual(9, sum(item["failure"] == "intermittent" for item in scenarios))
         self.assertEqual(["hang_baseline"], [item["name"] for item in scenarios if item["failure"] == "hang"])
-        self.assertEqual({"flap_fall1", "flap_fall5"}, {item["name"] for item in scenarios if item["failure"] == "intermittent"})
+        self.assertEqual({"flap_fall1", "flap_fall5", *orchestrate.FLAP_SWEEP_SCENARIOS}, {item["name"] for item in scenarios if item["failure"] == "intermittent"})
 
     def test_core_scenarios_exist(self):
         names = {item["name"] for item in orchestrate.load_scenarios()}

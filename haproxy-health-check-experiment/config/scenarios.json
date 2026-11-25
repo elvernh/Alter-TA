@@ -10,6 +10,12 @@
   {"name": "konservatif",  "inter_ms": 5000, "fall": 5, "rise": 5, "failure": "total"},
   {"name": "flap_fall1",   "inter_ms": 2000, "fall": 1, "rise": 2, "failure": "intermittent", "failure_probability": 0.3},
   {"name": "flap_fall5",   "inter_ms": 2000, "fall": 5, "rise": 2, "failure": "intermittent", "failure_probability": 0.3},
-  {"name": "hang_baseline", "inter_ms": 2000, "fall": 3, "rise": 2, "failure": "hang"}
+  {"name": "hang_baseline", "inter_ms": 2000, "fall": 3, "rise": 2, "failure": "hang"},
+  {"name": "flap_fall3",     "inter_ms": 2000, "fall": 3, "rise": 2, "failure": "intermittent", "failure_probability": 0.3},
+  {"name": "flap_fall1_p01", "inter_ms": 2000, "fall": 1, "rise": 2, "failure": "intermittent", "failure_probability": 0.1},
+  {"name": "flap_fall3_p01", "inter_ms": 2000, "fall": 3, "rise": 2, "failure": "intermittent", "failure_probability": 0.1},
+  {"name": "flap_fall5_p01", "inter_ms": 2000, "fall": 5, "rise": 2, "failure": "intermittent", "failure_probability": 0.1},
+  {"name": "flap_fall1_p05", "inter_ms": 2000, "fall": 1, "rise": 2, "failure": "intermittent", "failure_probability": 0.5},
+  {"name": "flap_fall3_p05", "inter_ms": 2000, "fall": 3, "rise": 2, "failure": "intermittent", "failure_probability": 0.5},
+  {"name": "flap_fall5_p05", "inter_ms": 2000, "fall": 5, "rise": 2, "failure": "intermittent", "failure_probability": 0.5}
 ]
-
